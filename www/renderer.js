@@ -179,9 +179,9 @@ export class Renderer {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
 
-    const rect = canvas.getBoundingClientRect();
-    this.canvasWidth = rect.width;
-    this.canvasHeight = rect.height;
+    // const rect = canvas.getBoundingClientRect();
+    this.canvasWidth = canvas.width;
+    this.canvasHeight = canvas.height;
   }
 
   initControls(controls) {

@@ -19,6 +19,7 @@ canvas {
 
 table {
     width: 8rem;
+    margin-top: 1rem;
     font-size: 0.6rem;
     position: absolute;
     right: 0;
@@ -67,6 +68,7 @@ table th {
 .centered {
     width: 100%;
     display: grid;
+    margin-top: 4rem;
 }
 
 .centered > section {
@@ -101,4 +103,51 @@ section p {
 section p.enabled {
     opacity: 0.5;
     cursor: pointer;
+}
+
+@media only screen and (max-width: 640px) {
+    main.container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    #controls {
+        width: 100%;
+    }
+
+    table {
+        display: none;
+    }
+
+    .centered {
+        display: block;
+        margin-top: 2rem;
+    }
+
+    .centered > section {
+        display: block;
+        margin-bottom: 1rem;
+    }
+
+    .centered > section header {
+        display: block;
+        font-size: 1.5rem;
+        width: 100%;
+        font-weight: bold;
+    }
+
+    .centered > section p {
+        display: inline-block;
+        font-size: 1.2rem;
+        margin-right: 0.4rem;
+        margin-bottom: 0;
+        cursor: default;
+        text-align: center;
+    }
+
+    #controls {
+        width: 100%;
+        margin-top: 2rem;
+        text-align: center;
+    }
 }
