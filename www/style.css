@@ -1,0 +1,92 @@
+body {
+    text-transform: lowercase;
+}
+
+main.container {
+    position: relative;
+}
+
+h1 {
+    text-align: center;
+    font-size: 1.5rem;
+    margin-top: 1em;
+}
+
+canvas {
+    width: 100%;
+    margin-top: 2rem;
+}
+
+table {
+    width: 8rem;
+    font-size: 0.6rem;
+    position: absolute;
+    right: 0;
+}
+
+table th,
+td {
+    border: 0;
+    padding: 0;
+}
+
+table th {
+    font-weight: bold;
+}
+
+.material-symbols-outlined {
+    font-size: 64px;
+    border: none;
+    background: none;
+    padding: 0;
+}
+
+.material-symbols-outlined:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+.material-symbols-outlined:active,
+.material-symbols-outlined:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.centered {
+    width: 100%;
+    display: grid;
+}
+
+.centered > section {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 0.6rem;
+}
+
+.centered > section * {
+    font-size: 0.7rem;
+}
+
+.centered.disabled > section * {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+section header {
+    display: inline-block;
+    font-weight: bold;
+    margin-right: 1rem;
+}
+
+section p {
+    display: inline-block;
+    margin-right: 0.7rem;
+    margin-bottom: 0;
+    cursor: default;
+}
+
+section p.enabled {
+    opacity: 0.5;
+    cursor: pointer;
+}
