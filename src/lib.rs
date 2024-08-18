@@ -203,7 +203,7 @@ impl Sorting {
                 let mut pos = cycle_start;
 
                 for i in cycle_start + 1..s.size {
-                    if s.pre_read(i) < item {
+                    if s.pre_compare(i, cycle_start) == Ordering::Less {
                         pos += 1;
                     }
                 }
@@ -212,14 +212,12 @@ impl Sorting {
                     continue;
                 }
 
-                while item == s.pre_read(pos) {
+                while s.pre_compare(pos, cycle_start) == Ordering::Equal {
                     pos += 1;
                 }
 
                 if pos != cycle_start {
-                    let temp = s.pre_read(pos);
-                    s.pre_write(pos, item);
-                    item = temp;
+                    s.pre_swap(pos, cycle_start);
                 }
 
                 while pos != cycle_start {
@@ -241,6 +239,58 @@ impl Sorting {
                         item = temp;
                     }
                 }
+            }
+        });
+    }
+
+    pub fn heap(&mut self) {
+        self.set_algo(|s| {
+            fn heapify(s: &mut Sorting, n: usize, i: usize) {
+                let mut largest = i;
+                let left = 2 * i + 1;
+                let right = 2 * i + 2;
+
+                if left < n && s.pre_compare(left, largest) == Ordering::Greater {
+                    largest = left;
+                }
+
+                if right < n && s.pre_compare(right, largest) == Ordering::Greater {
+                    largest = right;
+                }
+
+                if largest != i {
+                    s.pre_swap(i, largest);
+                    heapify(s, n, largest);
+                }
+            }
+
+            let n = s.size;
+
+            for i in (0..n / 2).rev() {
+                heapify(s, n, i);
+            }
+
+            for i in (1..n).rev() {
+                s.pre_swap(0, i);
+                heapify(s, i, 0);
+            }
+        });
+    }
+
+    pub fn shell(&mut self) {
+        self.set_algo(|s| {
+            let n = s.size;
+            let mut gap = n / 2;
+
+            while gap > 0 {
+                for i in gap..n {
+                    let mut j = i;
+                    while j >= gap && s.pre_compare(j - gap, j) == Ordering::Greater {
+                        s.pre_swap(j - gap, j);
+                        j -= gap;
+                    }
+                }
+                gap /= 2;
             }
         });
     }

@@ -11,6 +11,8 @@ export class Renderer {
   }) {
     this.settingsConfig = { ...settingsConfig };
     this.frame = null;
+    this.framesCount = 0;
+    this.animationStartAt = null;
 
     this.initCanvas(canvas);
     this.initControls(controls);
@@ -51,6 +53,7 @@ export class Renderer {
 
   draw() {
     this.drawArray();
+    this.framesCount++;
     this.drawStats();
   }
 
@@ -83,6 +86,12 @@ export class Renderer {
     this.writes.innerText = this.sortArray.writes();
     this.compares.innerText = this.sortArray.compares();
     this.swaps.innerText = this.sortArray.swaps();
+
+    const fpsCount = this.animationStartAt
+      ? (this.framesCount / (Date.now() - this.animationStartAt)) * 1000
+      : 0;
+
+    this.fps.innerText = fpsCount.toFixed(1);
   }
 
   drawSettings() {
@@ -148,6 +157,8 @@ export class Renderer {
     this.settingsWrapper.classList.add("disabled");
     this.playPause.innerText = "pause";
     this.reset.disabled = true;
+    this.animationStartAt = Date.now();
+    this.framesCount = 0;
 
     this.initAlgorithm();
     this.animate();
@@ -200,12 +211,13 @@ export class Renderer {
   }
 
   initStats(stats) {
-    const [reads, writes, compares, swaps] = stats;
+    const [reads, writes, compares, swaps, fps] = stats;
 
     this.reads = reads;
     this.writes = writes;
     this.compares = compares;
     this.swaps = swaps;
+    this.fps = fps;
   }
 
   initArray() {
@@ -249,6 +261,12 @@ export class Renderer {
         break;
       case "cycle":
         this.sortArray.cycle();
+        break;
+      case "heap":
+        this.sortArray.heap();
+        break;
+      case "shell":
+        this.sortArray.shell();
         break;
       case "oddEven":
         this.sortArray.oddEven();

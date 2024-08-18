@@ -11,7 +11,14 @@ const canvas = byId("canvas");
 const settingsWrapper = byId("settings");
 
 const controls = [byId("play-pause"), byId("reset")];
-const stats = [byId("reads"), byId("writes"), byId("compares"), byId("swaps")];
+
+const stats = [
+  byId("reads"),
+  byId("writes"),
+  byId("compares"),
+  byId("swaps"),
+  byId("fps"),
+];
 
 const settings = Array.from([
   byId("initial"),
