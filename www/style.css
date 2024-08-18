@@ -41,6 +41,18 @@ table th {
     padding: 0;
 }
 
+@media (prefers-color-scheme: dark) {
+    .material-symbols-outlined {
+        color: white;
+    }
+}
+
+@media (prefers-color-scheme: light) {
+    .material-symbols-outlined {
+        color: black;
+    }
+}
+
 .material-symbols-outlined:disabled {
     cursor: not-allowed;
     opacity: 0.4;
