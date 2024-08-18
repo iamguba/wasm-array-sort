@@ -58,7 +58,7 @@ export class Renderer {
     const lastOperation = this.sortArray.operation();
     const cursorIndex = lastOperation ? lastOperation.Read : null;
 
-    this.ctx.clearRect(0, 0, this.canvasWidth + 10, this.canvasHeight);
+    this.ctx.clearRect(0, 0, this.canvasWidth + 10, this.canvasHeight + 10);
 
     this.sortArray.values().forEach((v, i) => {
       i === cursorIndex
