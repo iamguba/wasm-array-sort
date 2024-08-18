@@ -150,4 +150,8 @@ section p.enabled {
         margin-top: 2rem;
         text-align: center;
     }
+
+    .centered p.mobile-hide {
+        display: none;
+    }
 }
