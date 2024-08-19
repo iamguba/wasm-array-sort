@@ -9,10 +9,13 @@ export class Renderer {
     stats,
     canvas,
   }) {
+    this.maxMobileSize = 1024;
     this.readConfigFromHash(settingsConfig);
+
     this.frame = null;
     this.framesCount = 0;
     this.animationStartAt = null;
+    this.sortState = "idle";
 
     this.initCanvas(canvas);
     this.initControls(controls);
@@ -26,16 +29,22 @@ export class Renderer {
   }
 
   animate() {
-    if (!this.sortArray.frame(Number(this.settingsConfig.sortTime))) {
+    const sortTime = Number(this.settingsConfig.sortTime);
+    this.sortState = "sorting";
+
+    if (!this.sortArray.frame(sortTime)) {
       this.draw();
       this.stopAnimate();
 
       this.playPause.disabled = true;
+      this.next.disabled = true;
+      this.sortState = "idle";
 
       return;
     }
 
     this.draw();
+    this.framesCount++;
 
     this.frame = window.requestAnimationFrame(() => {
       this.animate();
@@ -49,11 +58,24 @@ export class Renderer {
     this.settingsWrapper.classList.remove("disabled");
     this.playPause.innerText = "play_arrow";
     this.reset.disabled = false;
+    this.next.disabled = false;
+    this.sortState = "paused";
+  }
+
+  nextTick() {
+    if (!this.sortArray.tick()) {
+      this.playPause.disabled = true;
+      this.next.disabled = true;
+      this.sortState = "idle";
+
+      return;
+    }
+
+    this.draw();
   }
 
   draw() {
     this.drawArray();
-    this.framesCount++;
     this.drawStats();
   }
 
@@ -86,6 +108,7 @@ export class Renderer {
     this.writes.innerText = this.sortArray.writes();
     this.compares.innerText = this.sortArray.compares();
     this.swaps.innerText = this.sortArray.swaps();
+    this.operation.innerText = this.getOperationDesc();
 
     const fpsCount = this.animationStartAt
       ? (this.framesCount / (Date.now() - this.animationStartAt)) * 1000
@@ -115,32 +138,43 @@ export class Renderer {
       this.draw();
 
       this.playPause.disabled = false;
+      this.next.disabled = false;
     }
   }
 
   handleSizeClick(el) {
-    if (this.handleSettingsClick(el, "size")) {
+    if (this.handleSettingsClick(el, "size", true)) {
       this.initArray();
       this.draw();
 
       this.playPause.disabled = false;
+      this.next.disabled = false;
     }
   }
 
   handleSortTimeClick(el) {
-    this.handleSettingsClick(el, "sortTime");
+    this.handleSettingsClick(el, "sortTime", true);
   }
 
   handleAlgorithmClick(el) {
-    this.handleSettingsClick(el, "algorithm");
+    if (
+      this.handleSettingsClick(el, "algorithm") &&
+      this.sortState === "idle"
+    ) {
+      this.initArrayInitial();
+      this.draw();
+
+      this.playPause.disabled = false;
+      this.next.disabled = false;
+    }
   }
 
-  handleSettingsClick(el, key) {
+  handleSettingsClick(el, key, toNumber = false) {
     if (!el.classList.contains("enabled") || this.frame) {
       return false;
     }
 
-    const value = el.dataset.value;
+    const value = toNumber ? Number(el.dataset.value) : el.dataset.value;
     this.settingsConfig = { ...this.settingsConfig, [key]: value };
 
     this.drawSettings();
@@ -158,11 +192,15 @@ export class Renderer {
     this.settingsWrapper.classList.add("disabled");
     this.playPause.innerText = "pause";
     this.reset.disabled = true;
+    this.next.disabled = true;
     this.animationStartAt = Date.now();
     this.framesCount = 0;
 
-    this.initAlgorithm();
     this.animate();
+  }
+
+  handleNextTickClick() {
+    this.nextTick();
   }
 
   handleResetClick() {
@@ -197,22 +235,27 @@ export class Renderer {
 
   readConfigFromHash(settingsConfig) {
     const hash = window.location.hash.substring(1);
+
     if (hash) {
       try {
         const parsedConfig = JSON.parse(decodeURIComponent(hash));
         this.settingsConfig = { ...settingsConfig, ...parsedConfig };
-      } catch (error) {
-        console.error(
-          "Invalid hash format, using default settingsConfig.",
-          error,
-        );
-        this.settingsConfig = { ...settingsConfig };
-        this.setConfigToHash();
-      }
-    } else {
-      this.settingsConfig = { ...settingsConfig };
-      this.setConfigToHash();
+
+        if (this.isMobile()) {
+          this.settingsConfig.size = Math.min(
+            this.settingsConfig.size,
+            this.maxMobileSize,
+          );
+
+          this.setConfigToHash();
+        }
+      } catch (e) {}
+
+      return;
     }
+
+    this.settingsConfig = { ...settingsConfig };
+    this.setConfigToHash();
   }
 
   setConfigToHash() {
@@ -226,15 +269,15 @@ export class Renderer {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
 
-    // const rect = canvas.getBoundingClientRect();
     this.canvasWidth = canvas.width;
     this.canvasHeight = canvas.height;
   }
 
   initControls(controls) {
-    const [playPause, reset, share] = controls;
+    const [playPause, next, reset, share] = controls;
 
     this.playPause = playPause;
+    this.next = next;
     this.reset = reset;
     this.share = share;
   }
@@ -245,13 +288,21 @@ export class Renderer {
     const settingsProps = {};
     for (const settingsEl of settings) {
       const elProps = {};
+      const key = settingsEl.dataset.key ?? settingsEl.id;
       const props = Array.from(settingsEl.querySelectorAll("p"));
 
       for (const p of props) {
         elProps[p.dataset.value] = p;
+
+        if (
+          this.isMobile() &&
+          key === "size" &&
+          Number(p.dataset.value) > this.maxMobileSize
+        ) {
+          p.classList.add("mobile-hide");
+        }
       }
 
-      const key = settingsEl.dataset.key ?? settingsEl.id;
       settingsProps[key] = elProps;
     }
 
@@ -259,12 +310,13 @@ export class Renderer {
   }
 
   initStats(stats) {
-    const [reads, writes, compares, swaps, fps] = stats;
+    const [reads, writes, compares, swaps, operation, fps] = stats;
 
     this.reads = reads;
     this.writes = writes;
     this.compares = compares;
     this.swaps = swaps;
+    this.operation = operation;
     this.fps = fps;
   }
 
@@ -288,6 +340,8 @@ export class Renderer {
 
     this.sortArray.flush();
     this.sortArray.resetStats();
+
+    this.initAlgorithm();
   }
 
   initAlgorithm() {
@@ -323,5 +377,39 @@ export class Renderer {
         this.sortArray.quickSort();
         break;
     }
+  }
+
+  getOperationDesc() {
+    const operation = this.sortArray.operation();
+
+    if (operation && typeof operation === "string") {
+      return operation;
+    }
+
+    if (operation && operation.Read) {
+      return `Read(${operation.Read})`;
+    }
+
+    if (operation && operation.Write) {
+      return `Write(${operation.Write[0]}, ${operation.Write[1]})`;
+    }
+
+    return "-";
+  }
+
+  isMobile() {
+    const toMatch = [
+      /Android/i,
+      /webOS/i,
+      /iPhone/i,
+      /iPad/i,
+      /iPod/i,
+      /BlackBerry/i,
+      /Windows Phone/i,
+    ];
+
+    return toMatch.some((toMatchItem) => {
+      return navigator.userAgent.match(toMatchItem);
+    });
   }
 }

@@ -26,7 +26,7 @@ canvas {
 }
 
 table {
-    width: 8rem;
+    width: 12rem;
     margin-top: 1rem;
     font-size: 0.6rem;
     position: absolute;
@@ -41,6 +41,10 @@ td {
 
 table th {
     font-weight: bold;
+}
+
+table td {
+    text-align: right;
 }
 
 .material-symbols-outlined {
@@ -77,6 +81,10 @@ table th {
     width: 100%;
     display: grid;
     margin-top: 4rem;
+}
+
+.centered p.mobile-hide {
+    display: none;
 }
 
 .centered > section {
@@ -157,9 +165,5 @@ section p.enabled {
         width: 100%;
         margin-top: 2rem;
         text-align: center;
-    }
-
-    .centered p.mobile-hide {
-        display: none;
     }
 }

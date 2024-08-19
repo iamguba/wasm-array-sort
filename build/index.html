@@ -46,6 +46,10 @@
                         <td id="swaps">0</td>
                     </tr>
                     <tr>
+                        <th>Operation</th>
+                        <td id="operation">-</td>
+                    </tr>
+                    <tr>
                         <th>FPS</th>
                         <td id="fps">0</td>
                     </tr>
@@ -59,6 +63,13 @@
                     onclick="renderer.handlePlayPauseClick()"
                 >
                     play_arrow
+                </button>
+                <button
+                    id="next-tick"
+                    class="material-symbols-outlined"
+                    onclick="renderer.handleNextTickClick()"
+                >
+                    skip_next
                 </button>
                 <button
                     id="reset"
@@ -174,7 +185,6 @@
                         2048
                     </p>
                     <p
-                        class="mobile-hide"
                         data-value="4096"
                         onclick="renderer.handleSizeClick(event.target)"
                     >
