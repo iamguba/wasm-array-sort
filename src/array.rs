@@ -5,7 +5,7 @@ pub struct Array {
     reads: usize,
     writes: usize,
     compares: usize,
-    swaps: usize
+    swaps: usize,
 }
 
 impl Array {
@@ -21,7 +21,7 @@ impl Array {
             reads: 0,
             writes: 0,
             compares: 0,
-            swaps: 0
+            swaps: 0,
         }
     }
 
@@ -52,25 +52,21 @@ impl Array {
         self.swaps = 0;
     }
 
-    pub fn clone_values(&self) -> Vec<u16> {
-        self.values.clone()
-    }
-
     pub fn apply(&mut self, operation: &Operation) {
         match *operation {
             Operation::Read(_) => {
                 self.reads += 1;
-            },
+            }
             Operation::Write(index, value) => {
                 self.writes += 1;
                 self.values[index] = value;
-            },
+            }
             Operation::Compare => {
                 self.compares += 1;
-            },
+            }
             Operation::Swap => {
                 self.swaps += 1;
-            },
+            }
         }
     }
 }

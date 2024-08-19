@@ -10,7 +10,7 @@ const settingsConfig = {
 const canvas = byId("canvas");
 const settingsWrapper = byId("settings");
 
-const controls = [byId("play-pause"), byId("reset")];
+const controls = [byId("play-pause"), byId("reset"), byId("share")];
 
 const stats = [
   byId("reads"),

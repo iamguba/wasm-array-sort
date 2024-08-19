@@ -9,7 +9,7 @@ export class Renderer {
     stats,
     canvas,
   }) {
-    this.settingsConfig = { ...settingsConfig };
+    this.readConfigFromHash(settingsConfig);
     this.frame = null;
     this.framesCount = 0;
     this.animationStartAt = null;
@@ -144,6 +144,7 @@ export class Renderer {
     this.settingsConfig = { ...this.settingsConfig, [key]: value };
 
     this.drawSettings();
+    this.setConfigToHash();
 
     return true;
   }
@@ -175,6 +176,52 @@ export class Renderer {
     this.playPause.disabled = false;
   }
 
+  handleShareClick() {
+    this.share.disabled = true;
+
+    navigator.clipboard
+      .writeText(window.location.href)
+      .then(() => {
+        this.share.innerText = "download_done";
+      })
+      .catch((err) => {
+        console.error("Failed to copy link to clipboard: ", err);
+      })
+      .finally(() => {
+        setTimeout(() => {
+          this.share.innerText = "ios_share";
+          this.share.disabled = false;
+        }, 1000);
+      });
+  }
+
+  readConfigFromHash(settingsConfig) {
+    const hash = window.location.hash.substring(1);
+    if (hash) {
+      try {
+        const parsedConfig = JSON.parse(decodeURIComponent(hash));
+        this.settingsConfig = { ...settingsConfig, ...parsedConfig };
+      } catch (error) {
+        console.error(
+          "Invalid hash format, using default settingsConfig.",
+          error,
+        );
+        this.settingsConfig = { ...settingsConfig };
+        this.setConfigToHash();
+      }
+    } else {
+      this.settingsConfig = { ...settingsConfig };
+      this.setConfigToHash();
+    }
+  }
+
+  setConfigToHash() {
+    const serializedConfig = encodeURIComponent(
+      JSON.stringify(this.settingsConfig),
+    );
+    window.location.hash = serializedConfig;
+  }
+
   initCanvas(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
@@ -185,10 +232,11 @@ export class Renderer {
   }
 
   initControls(controls) {
-    const [playPause, reset] = controls;
+    const [playPause, reset, share] = controls;
 
     this.playPause = playPause;
     this.reset = reset;
+    this.share = share;
   }
 
   initSettingsProps(settingsWrapper, settings) {

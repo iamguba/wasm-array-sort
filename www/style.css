@@ -17,6 +17,14 @@ canvas {
     margin-top: 2rem;
 }
 
+#controls {
+    margin-top: 1rem;
+}
+
+#controls #share {
+    scale: 0.8;
+}
+
 table {
     width: 8rem;
     margin-top: 1rem;
@@ -36,7 +44,7 @@ table th {
 }
 
 .material-symbols-outlined {
-    font-size: 64px;
+    font-size: 3rem;
     border: none;
     background: none;
     padding: 0;
