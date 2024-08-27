@@ -28,6 +28,10 @@ export class Renderer {
     this.draw();
   }
 
+  /**
+    Animations
+  */
+
   animate() {
     const sortTime = Number(this.settingsConfig.sortTime);
     this.sortState = "sorting";
@@ -35,10 +39,7 @@ export class Renderer {
     if (!this.sortArray.frame(sortTime)) {
       this.draw();
       this.stopAnimate();
-
-      this.playPause.disabled = true;
-      this.next.disabled = true;
-      this.sortState = "idle";
+      this.drawIdleState();
 
       return;
     }
@@ -55,7 +56,6 @@ export class Renderer {
     window.cancelAnimationFrame(this.frame);
     this.frame = null;
 
-    this.settingsWrapper.classList.remove("disabled");
     this.playPause.innerText = "play_arrow";
     this.reset.disabled = false;
     this.next.disabled = false;
@@ -64,15 +64,17 @@ export class Renderer {
 
   nextTick() {
     if (!this.sortArray.tick()) {
-      this.playPause.disabled = true;
-      this.next.disabled = true;
-      this.sortState = "idle";
-
+      this.drawIdleState();
       return;
     }
 
+    this.settingsWrapper.classList.add("disabled");
     this.draw();
   }
+
+  /**
+    Drawers
+  */
 
   draw() {
     this.drawArray();
@@ -110,9 +112,10 @@ export class Renderer {
     this.swaps.innerText = this.sortArray.swaps();
     this.operation.innerText = this.getOperationDesc();
 
-    const fpsCount = this.animationStartAt
-      ? (this.framesCount / (Date.now() - this.animationStartAt)) * 1000
-      : 0;
+    const fpsCount =
+      this.sortState === "sorting" && this.animationStartAt
+        ? (this.framesCount / (Date.now() - this.animationStartAt)) * 1000
+        : 0;
 
     this.fps.innerText = fpsCount.toFixed(1);
   }
@@ -131,6 +134,17 @@ export class Renderer {
       }
     }
   }
+
+  drawIdleState() {
+    this.settingsWrapper.classList.remove("disabled");
+    this.playPause.disabled = true;
+    this.next.disabled = true;
+    this.sortState = "idle";
+  }
+
+  /**
+    Handlers
+  */
 
   handleInitialClick(el) {
     if (this.handleSettingsClick(el, "initial")) {
@@ -184,12 +198,13 @@ export class Renderer {
   }
 
   handlePlayPauseClick() {
+    this.settingsWrapper.classList.add("disabled");
+
     if (this.frame) {
       this.stopAnimate();
       return;
     }
 
-    this.settingsWrapper.classList.add("disabled");
     this.playPause.innerText = "pause";
     this.reset.disabled = true;
     this.next.disabled = true;
@@ -211,6 +226,7 @@ export class Renderer {
     this.initArray();
     this.draw();
 
+    this.settingsWrapper.classList.remove("disabled");
     this.playPause.disabled = false;
   }
 
@@ -232,6 +248,29 @@ export class Renderer {
         }, 1000);
       });
   }
+
+  handlePresetClick(el) {
+    this.settingsConfig = {
+      ...this.settingsConfig,
+      algorithm: el.dataset.algo,
+      initial: el.dataset.initial,
+    };
+
+    this.stopAnimate();
+    this.setConfigToHash();
+    this.initArray();
+
+    this.drawIdleState();
+    this.drawSettings();
+    this.draw();
+
+    this.playPause.disabled = false;
+    this.next.disabled = false;
+  }
+
+  /**
+    Hash helpers
+  */
 
   readConfigFromHash(settingsConfig) {
     const hash = window.location.hash.substring(1);
@@ -264,6 +303,10 @@ export class Renderer {
     );
     window.location.hash = serializedConfig;
   }
+
+  /**
+    Init functions
+  */
 
   initCanvas(canvas) {
     this.canvas = canvas;
@@ -378,6 +421,10 @@ export class Renderer {
         break;
     }
   }
+
+  /**
+    Etc
+  */
 
   getOperationDesc() {
     const operation = this.sortArray.operation();
